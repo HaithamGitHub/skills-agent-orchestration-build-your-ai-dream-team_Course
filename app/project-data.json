@@ -1,0 +1,32 @@
+{
+  "projects": [
+    {
+      "name": "Customer Portal Refresh",
+      "owner": "Maya Chen",
+      "status": "Active",
+      "recentActivity": "The new account settings layout is ready for review.",
+      "priority": "High"
+    },
+    {
+      "name": "Analytics Event Cleanup",
+      "owner": "Jordan Lee",
+      "status": "At risk",
+      "recentActivity": "A decision on the event naming convention is still pending.",
+      "priority": "High"
+    },
+    {
+      "name": "Mobile Onboarding",
+      "owner": "Sam Rivera",
+      "status": "Planned",
+      "recentActivity": "Scope and success metrics were agreed this week.",
+      "priority": "Medium"
+    },
+    {
+      "name": "Design System Docs",
+      "owner": "Avery Patel",
+      "status": "Complete",
+      "recentActivity": "The component usage guide was published.",
+      "priority": "Low"
+    }
+  ]
+}

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="A clear, at-a-glance view of project status, ownership, recent activity, and priority.">
+    <title>Project Pulse</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="dashboard">
+      <header class="dashboard-header">
+        <div class="dashboard-heading">
+          <p class="dashboard-eyebrow">Team overview</p>
+          <h1 class="dashboard-title">Project Pulse</h1>
+          <p class="dashboard-description">See what your team is working on, who owns it, and where attention is needed.</p>
+        </div>
+      </header>
+
+      <section aria-labelledby="projects-heading">
+        <div class="dashboard-toolbar">
+          <div>
+            <h2 class="section-heading" id="projects-heading">Projects</h2>
+            <p class="section-caption">Current status, ownership, and latest updates.</p>
+          </div>
+        </div>
+
+        <p class="loading-state" id="loading-state" role="status" aria-live="polite">Loading projects…</p>
+        <div class="empty-state" id="empty-state" role="status" hidden>
+          <h2>No projects yet</h2>
+          <p>There are no projects to display right now.</p>
+        </div>
+        <div class="error-state" id="error-state" role="alert" hidden>
+          <h2>Projects couldn’t be loaded</h2>
+          <p>Please check the project data and your connection, then refresh the page.</p>
+        </div>
+        <div class="project-grid" id="project-grid" aria-label="Project list"></div>
+      </section>
+    </main>
+
+    <script>
+      const grid = document.querySelector("#project-grid");
+      const loadingState = document.querySelector("#loading-state");
+      const emptyState = document.querySelector("#empty-state");
+      const errorState = document.querySelector("#error-state");
+
+      function createTextElement(tagName, className, text) {
+        const element = document.createElement(tagName);
+        element.className = className;
+        element.textContent = text;
+        return element;
+      }
+
+      function renderProject(project) {
+        const card = document.createElement("article");
+        card.className = "project-card";
+
+        const header = document.createElement("header");
+        header.className = "project-card-header";
+        header.append(createTextElement("h3", "project-card-title", project.name));
+        card.append(header);
+
+        const owner = document.createElement("p");
+        owner.className = "project-owner";
+        owner.append(
+          createTextElement("span", "", "Owner:"),
+          createTextElement("span", "owner-name", project.owner)
+        );
+        card.append(owner);
+
+        const meta = document.createElement("div");
+        meta.className = "project-card-meta";
+        const status = createTextElement("span", "status-badge", `Status: ${project.status}`);
+        status.dataset.status = project.status.toLowerCase();
+        const priority = createTextElement("span", "priority-badge", `Priority: ${project.priority}`);
+        priority.dataset.priority = project.priority.toLowerCase();
+        meta.append(status, priority);
+        card.append(meta);
+
+        const activity = document.createElement("div");
+        activity.className = "recent-activity";
+        activity.append(
+          createTextElement("span", "activity-label", "Recent activity"),
+          createTextElement("span", "", project.recentActivity)
+        );
+        card.append(activity);
+
+        return card;
+      }
+
+      function isProject(project) {
+        return project !== null
+          && typeof project === "object"
+          && ["name", "owner", "status", "recentActivity", "priority"].every(
+            (field) => typeof project[field] === "string" && project[field].trim().length > 0
+          );
+      }
+
+      async function loadProjects() {
+        try {
+          const response = await fetch("project-data.json");
+          if (!response.ok) {
+            throw new Error("Project data request failed");
+          }
+
+          const data = await response.json();
+          if (!data || !Array.isArray(data.projects) || !data.projects.every(isProject)) {
+            throw new Error("Project data has an invalid format");
+          }
+
+          loadingState.hidden = true;
+          if (data.projects.length === 0) {
+            emptyState.hidden = false;
+            return;
+          }
+
+          const cards = data.projects.map(renderProject);
+          grid.replaceChildren(...cards);
+        } catch (error) {
+          loadingState.hidden = true;
+          errorState.hidden = false;
+          console.error("Unable to load project data.", error);
+        }
+      }
+
+      loadProjects();
+    </script>
+  </body>
+</html>
